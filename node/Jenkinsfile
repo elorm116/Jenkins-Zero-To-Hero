@@ -5,14 +5,7 @@ pipeline {
     IMAGE_NAME = 'my-node-app'
     CONTAINER_PORT = '3000'
   }
-
-  stages {
-    stage('Clone Repository') {
-      steps {
-        git 'https://github.com/your-repo/node-app.git'  // Replace with your repository URL
-      }
-    }
-
+  
     stage('Build') {
       agent {
         docker {
