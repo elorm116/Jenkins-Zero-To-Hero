@@ -5,7 +5,8 @@ pipeline {
     IMAGE_NAME = 'my-node-app'
     CONTAINER_PORT = '3000'
   }
-  
+
+  stages {  // Missing "stages" block added
     stage('Build') {
       agent {
         docker {
