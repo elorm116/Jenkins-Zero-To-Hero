@@ -1,39 +1,42 @@
 pipeline {
-  agent any
+  agent none
 
-  environment {
-    IMAGE_NAME = 'my-node-app'
-    CONTAINER_PORT = '3000'
-  }
-
-  stages {  // Missing "stages" block added
-    stage('Build') {
+  stages {
+    stage('Back-end') {
       agent {
-        docker {
-          image 'node:20-alpine'
-          args '--user=root' // Ensures npm has correct permissions
-        }
+        docker { image 'maven:3.9.6-eclipse-temurin-17' }
       }
       steps {
-        sh 'npm install'
+        sh 'mvn --version'
       }
     }
 
-    stage('Test') {
+    stage('Front-end') {
+      agent {
+        docker { image 'node:20-alpine' }
+      }
       steps {
+        sh 'node --version'
+        sh 'npm install'
         sh 'npm test'
       }
     }
 
     stage('Build Docker Image') {
+      agent {
+        docker { image 'docker:latest' }
+      }
       steps {
-        sh 'docker build -t ${IMAGE_NAME} .'
+        sh 'docker build -t my-node-app .'
       }
     }
 
     stage('Run Container') {
+      agent {
+        docker { image 'docker:latest' }
+      }
       steps {
-        sh 'docker run -d -p 3000:${CONTAINER_PORT} --name my-running-app ${IMAGE_NAME}'
+        sh 'docker run -d -p 3000:3000 --name my-running-app my-node-app'
       }
     }
   }
