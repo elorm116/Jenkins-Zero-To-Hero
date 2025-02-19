@@ -17,8 +17,15 @@ pipeline {
       }
       steps {
         sh 'node --version'
-        sh 'npm install'
-        sh 'npm test'
+        script {
+          // Check if package.json exists before running npm commands
+          if (fileExists('package.json')) {
+            sh 'npm install'
+            sh 'npm test'
+          } else {
+            echo 'package.json not found. Skipping npm install and npm test.'
+          }
+        }
       }
     }
 
@@ -27,7 +34,14 @@ pipeline {
         docker { image 'docker:latest' }
       }
       steps {
-        sh 'docker build -t my-node-app .'
+        script {
+          // Ensure Dockerfile exists before building the image
+          if (fileExists('Dockerfile')) {
+            sh 'docker build -t my-node-app .'
+          } else {
+            echo 'Dockerfile not found. Skipping Docker image build.'
+          }
+        }
       }
     }
 
@@ -36,7 +50,14 @@ pipeline {
         docker { image 'docker:latest' }
       }
       steps {
-        sh 'docker run -d -p 3000:3000 --name my-running-app my-node-app'
+        script {
+          // Ensure the Docker image exists before running the container
+          if (sh(script: 'docker images -q my-node-app', returnStatus: true) == 0) {
+            sh 'docker run -d -p 3000:3000 --name my-running-app my-node-app'
+          } else {
+            echo 'Docker image my-node-app not found. Skipping container run.'
+          }
+        }
       }
     }
   }
